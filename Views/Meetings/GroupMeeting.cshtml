@@ -1,0 +1,66 @@
+﻿@model IEnumerable<TimeTrackingSystem.Models.Meeting>
+@using System.Security.Claims;
+@{
+    ViewData["Title"] = "Meeting";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-between">
+        <div class="h6 font-weight-bold text-primary align-self-center">My Group Meeting</div>
+        <a asp-action="Create" class="d-flex justify-content-between btn btn-success btn-icon-split">
+            <span class="text">Book Meeting</span>
+            <span class="icon text-white-50">
+                <i class="fas fa-plus"></i>
+            </span>
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.MeetingCode)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Group.Name)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.OpenAt)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.CloseAt)
+                        </th>
+                        <th>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.MeetingCode"
+                                   class="font-weight-bold">
+                                    @Html.DisplayFor(modelItem => item.MeetingCode)
+                                </a>
+                            </td>
+                            <td>
+                                @(item.Group?.Name ?? "")
+                            </td>
+                            <td>
+                                @item.OpenAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                @item.CloseAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-primary" asp-controller="Meetings" asp-action="Room" asp-route-id="@item.MeetingCode">Join</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

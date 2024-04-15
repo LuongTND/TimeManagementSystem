@@ -1,0 +1,59 @@
+﻿@model IEnumerable<TimeTrackingSystem.Models.Group>
+@using System.Security.Claims;
+@{
+    ViewData["Title"] = "Groups";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-between">
+        <div class="h6 font-weight-bold text-primary align-self-center">My Lead Group</div>
+        <a asp-action="Create" class="d-flex justify-content-between btn btn-success btn-icon-split">
+            <span class="text">Create</span>
+            <span class="icon text-white-50">
+                <i class="fas fa-plus"></i>
+            </span>
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Name)
+                        </th>
+                        <th>
+                            Leader
+                        </th>
+                        <th>
+                            Members
+                        </th>
+                        <th>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var numberOfMember = item.Members.Count();
+
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @(item.Leader?.Name ?? "")
+                            </td>
+                            <td>
+                                @numberOfMember members
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-primary" asp-controller="Group" asp-action="Out" asp-route-id="@item.GroupID">Out Group</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

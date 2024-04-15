@@ -1,0 +1,49 @@
+﻿@model TimeTrackingSystem.Models.Task
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Create task";
+    var id = User.FindFirstValue("Id");
+}
+
+<h1 class="h3 mb-4 text-gray-800">
+    <a asp-action="Index" class="btn btn-secondary btn-icon-split mt-2">
+        <span class="icon text-white-50">
+            <i class="fas fa-backward"></i>
+        </span>
+        <span class="text font-weight-bold">Task Management</span>
+    </a>
+</h1>
+<div class="card shadow mb-4 mx-auto" style="max-width: 500px;">
+    <div class="card-header font-weight-bold text-primary py-3">
+        Add Task
+    </div>
+    <div class="card-body row">
+        <form class="mb-3 col-12" asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-white"></div>
+            <input asp-for="AccountID" value="@id" hidden>
+            <div class="form-group">
+                <label asp-for="Title"></label>
+                <input asp-for="Title" class="form-control" placeholder="Enter task name">
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description"></label>
+                <input asp-for="Description" class="form-control" placeholder="Enter task description">
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartAt"></label>
+                <input asp-for="StartAt" class="form-control" placeholder="Enter start date">
+                <span asp-validation-for="StartAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DueAt"></label>
+                <input asp-for="DueAt" class="form-control" placeholder="Enter due date">
+                <span asp-validation-for="DueAt" class="text-danger"></span>
+            </div>
+            <div class="col-md-12 mt-2">
+                <button type="submit" class="mt-3 font-weight-bold btn btn-success btn-block">ADD</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,36 @@
+/* Order Main section */
+#order-sidebar {
+    display: none;
+    min-width: 24rem;
+    top: 0;
+    bottom: 0;
+    right: 0!important;
+    left: auto;
+    z-index: 1000!important;
+}
+
+#hideOrder {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgb(106, 107, 107);
+    opacity: 10%;
+    z-index: 100!important;
+}
+
+.order-list {
+    overflow-y: scroll;
+    max-height: 64%;
+}
+
+.order-main::-webkit-scrollbar, ::-webkit-scrollbar{
+    display: none;
+}
+
+/* Item content section */
+.item-quantity {
+    width: 44px!important;
+}

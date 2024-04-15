@@ -1,0 +1,71 @@
+﻿@model IEnumerable<TimeTrackingSystem.Controllers.HomeController.EventObject>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div id="calendar" style="height: 80vh;"></div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
+
+    <style>
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            -ms-overflow-style: none;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+    <script>
+        const Calendar = tui.Calendar;
+        const container = document.getElementById('calendar');
+        const options = {
+            defaultView: 'week',
+            useFormPopup: false,
+            useDetailPopup: true,
+            calendars: [
+                {
+                    id: 'meeting',
+                    name: 'Meeting',
+                    backgroundColor: '#4169E1',
+                },
+                {
+                    id: 'pertask',
+                    name: 'Personal task',
+                    backgroundColor: '#F57C00',
+                },
+            ],
+            week: {
+                taskView: false,
+                collapseDuplicateEvents: true
+            }
+        };
+
+        const calendar = new Calendar(container, options);
+
+        calendar.createEvents([
+            @foreach(var item in Model)
+            {
+                @:{
+                    @:id: '@item.ID',
+                    @:calendarId: '@item.CalendarID.ToString()',
+                    @:title: '@item.Title',
+                    @if(item.Body != null)
+                    {
+                @:body: '@Html.Raw("Join meeting at " + @item.Body)',
+                    }
+                    @:start: '@item.StartAt',
+                    @:end: '@item.EndAt',
+                    @:attendees: ["@item.Attend"],
+                    @:isReadOnly: true,
+                @:},
+            }
+        ]);
+    </script>
+}

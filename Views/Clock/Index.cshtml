@@ -1,0 +1,107 @@
+﻿@model Clock
+@using System.Security.Claims
+@{
+	Layout = null;
+	var roleId = User.FindFirstValue(ClaimTypes.Role);
+}
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Pomodoro clock</title>
+	<link href="https://fonts.googleapis.com/css?family=Raleway:200,400,800" rel="stylesheet" type="text/css">
+	<link href="~/admin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="~/css/styles.css">
+</head>
+<body id="home">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+		</div>
+
+		<nav class="navbar fixed-top">
+			<div class="container-fluid justify-content-end">
+				@if (!User.Identity.IsAuthenticated)
+				{
+				<div class="btn-group">
+					<a asp-action="LoginGoogle" asp-controller="Authen" class="nav-link" style="color: #7b7b7b">
+						Login
+					</a>
+				</div>
+				}
+				else
+				{
+					<div class="btn-group dropstart">
+						<a class="dropdown-toggle nav-link" style="color: #7b7b7b" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+							@(User.FindFirst(ClaimTypes.Name)?.Value?.Split(':').Last())
+						</a>
+					<ul class="dropdown-menu dropdown-menu-dark overflow-hidden">
+							<li><a class="dropdown-item" asp-action="Index" asp-controller="Home">Dashboard</a></li>
+							<li><a class="dropdown-item" asp-action="Index" asp-controller="Tasks">Task</a></li>
+							<li><a class="dropdown-item" asp-action="Index" asp-controller="Group">Group</a></li>
+							<li><a class="dropdown-item" asp-action="Index" asp-controller="Meetings">Meeting</a></li>
+							<li><hr class="dropdown-divider"></li>
+							@if (roleId != "2")
+							{
+								<li><a class="dropdown-item" asp-controller="Authen" asp-action="UpdateAccountPre">Upgrade Account</a></li>
+							}
+							<li><a class="dropdown-item" asp-action="Logout" asp-controller="Authen">Logout</a></li>
+						</ul>
+					</div>
+				}
+			</div>
+		</nav>
+
+		<div id="Content" class="wrapper">
+			<div class="top-wrapper">
+				<div id="header">
+					<div class="wrapper">
+						<h1><a class="logo">Pomodoro clock</a></h1>
+					</div>
+				</div>
+				<div class="countdown styled">
+					<div class="minutes">88 <span>MINUTES</span></div>
+					<div class="seconds">77 <span>SECONDS</span></div>
+				</div>
+
+			</div>
+			<div class="bottom-wrapper wrapper">
+				<h2 class="intro">Try harder!<br />Make khácer</h2>
+				<div id="subscribe">
+					<button class="start" onclick="togglePauseResume()">Start</button>
+					<button class="reset" onclick="restartTimer()">Reset</button>
+					<button class="setting" onclick="chooseTime()">Setting</button>
+				</div>
+				<span class="tempBy">A little change, a bigger difference!</span>
+			</div>
+		</div>
+
+		<script src="~/admin/vendor/jquery/jquery.min.js"></script>
+		<script src="~/admin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+		<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+		<script src="~/js/site.js" asp-append-version="true"></script>
+		<script src="~/js/TweenLite.min.js"></script>
+		<script src="~/js/EasePack.min.js"></script>
+		<script src="~/js/rAF.js"></script>
+		<script src="~/js/demo-1.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+		<script>
+			var enteredTime = @Model.WorkingTime;
+			var breakMin = @Model.RestTime;
+		</script>
+		<script src="~/js/clock.js"></script>
+
+
+		@if (TempData["Message"] != null)
+		{
+			<script>
+				showToast('@TempData["Message"]');
+			</script>
+		}
+	</body>
+</html>
+

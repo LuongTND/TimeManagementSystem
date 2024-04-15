@@ -1,0 +1,61 @@
+﻿@model IEnumerable<TimeTrackingSystem.Models.Task>
+
+@{
+    ViewData["Title"] = "Task";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-between">
+        <div class="h6 font-weight-bold text-primary align-self-center">Personal task</div>
+        <a asp-action="Create" class="d-flex justify-content-between btn btn-success btn-icon-split">
+            <span class="text">Create</span>
+            <span class="icon text-white-50">
+                <i class="fas fa-plus"></i>
+            </span>
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Title)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Description)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.StartAt)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.DueAt)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.TaskID"
+                                   class="font-weight-bold">
+                                    @Html.DisplayFor(modelItem => item.Title)
+                                </a>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </td>
+                            <td>
+                                @item.StartAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                @item.DueAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

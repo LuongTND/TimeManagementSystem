@@ -1,0 +1,210 @@
+﻿@using System.Security.Claims
+@{
+    var roleid = User.FindFirstValue(ClaimTypes.Role);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>@ViewData["Title"] - TimeTracking</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="~/admin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link href="~/lib/admin/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/TimeTrackingSystem.styles.css" asp-append-version="true" />
+
+    <!-- Custom styles for this template-->
+    <link href="~/admin/css/sb-admin-2.min.css" rel="stylesheet">
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Home">
+                <div class="sidebar-brand-text mx-3">Time Tracking</div>
+            </a>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Clock" asp-action="Index">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Pomodoro clock</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClean"
+                   aria-expanded="true" aria-controls="collapseClean">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Personal task</span>
+                </a>
+                <div id="collapseClean" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" asp-action="Create" asp-controller="Tasks">Create task</a>
+                        <a class="collapse-item" asp-action="Index" asp-controller="Tasks">Task management</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTool"
+                   aria-expanded="true" aria-controls="collapseTool">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Group</span>
+                </a>
+                <div id="collapseTool" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        @if(roleid == "2")
+                        {
+                            <h6 class="collapse-header">Lead Group</h6>
+                            <a class="collapse-item" asp-action="Create" asp-controller="Group">Create Group</a>
+                            <a class="collapse-item" asp-action="YourGroup" asp-controller="Group">Group Management</a>
+                            <a class="collapse-item" asp-action="GroupMeeting" asp-controller="Meetings">Group Meeting</a>
+                            <a class="collapse-item" asp-action="Create" asp-controller="Meetings">Book Meeting</a>
+                        }
+                        <h6 class="collapse-header">Joined Group</h6>
+                        <a class="collapse-item" asp-action="Index" asp-controller="Group">Join more</a>
+                        <a class="collapse-item" asp-action="JoinedGroup" asp-controller="Group">My group</a>
+                        <a class="collapse-item" asp-action="Index" asp-controller="Meetings">My meeting</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+        <!-- End of Sidebar -->
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.FindFirstValue(ClaimTypes.Name)</span>
+                                <img class="img-profile rounded-circle"
+                                     src="~/admin/img/undraw_profile.svg">
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                 aria-labelledby="userDropdown">
+                                @if(roleid == "1")
+                                {
+                                    <a class="dropdown-item" asp-controller="Authen" asp-action="UpdateAccountPre">
+                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Upgrade Account
+                                    </a>
+                                }
+                                <a class="dropdown-item" asp-controller="Authen" asp-action="Logout">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+                    @RenderBody()
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Time Tracking 2024</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <script src="~/admin/vendor/jquery/jquery.min.js"></script>
+    <script src="~/admin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/admin/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="~/lib/admin/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/lib/admin/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/admin/js/datatables.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/admin/js/sb-admin-2.min.js"></script>
+    
+    @if (TempData["Message"] != null)
+    {
+        <script>
+            showToast('@TempData["Message"]');
+        </script>
+    }
+
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+

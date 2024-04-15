@@ -1,0 +1,60 @@
+﻿@model TimeTrackingSystem.Models.Meeting
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1 class="h3 mb-4 text-gray-800">
+    <a asp-action="Index" class="btn btn-secondary btn-icon-split mt-2">
+        <span class="icon text-white-50">
+            <i class="fas fa-backward"></i>
+        </span>
+        <span class="text font-weight-bold">Task Management</span>
+    </a>
+</h1>
+<div class="card shadow mb-4 mx-auto" style="max-width: 500px;">
+    <div class="card-header font-weight-bold text-primary py-3">
+        Edit Task
+    </div>
+    <div class="card-body row">
+        <form class="mb-3 col-12" asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-white"></div>
+            <input type="hidden" asp-for="MeetingCode" />
+            <input type="hidden" asp-for="GroupID" />
+            <div class="form-group">
+                <label asp-for="OpenAt"></label>
+                <input asp-for="OpenAt" class="form-control">
+                <span asp-validation-for="OpenAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CloseAt"></label>
+                <input asp-for="CloseAt" class="form-control">
+                <span asp-validation-for="CloseAt" class="text-danger"></span>
+            </div>
+            <div class="col-md-12 mt-2">
+                <button type="submit" class="btn btn-primary btn-block mt-3">Update</button>
+                <a href="#" data-toggle="modal" data-target="#deleteModal"
+                   class="btn btn-danger btn-block">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cancel meeting</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Select "Cancel" below if you are ready to cancel this meeting.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <a class="btn btn-primary" asp-action="Delete" asp-route-id="@Model.MeetingCode">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>

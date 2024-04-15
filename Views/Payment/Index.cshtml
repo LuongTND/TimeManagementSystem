@@ -1,0 +1,41 @@
+﻿@model Int32
+@{
+    ViewData["Title"] = "Payment";
+    var id = User.FindFirst(c => c.Type == "Id")?.Value ?? "0";
+}
+
+<div class="container d-flex flex-column justify-content-center align-items-center">
+    <div class="card mb-3" style="height: auto; width: auto;">
+        <div class="card-header text-center">
+            <h3>Payment to get PREMIUM</h3>
+        </div>
+        <div class="card-body">
+            <p>Scan QR Code to payment. <b class="text-danger">Do not change information of payment!</b></p>
+            <img src="https://img.vietqr.io/image/970422-7010115062002-compact.png?amount=@(Model)&addInfo=id@(id)&accountName=Pham%20The%20Toan"
+                 alt="QR Code for Payment" class="qr-img img-fluid mx-auto d-block">
+            <div class="mt-3 text-center">
+                <p class="text-muted">**OR**</p>
+                <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Cancel payment</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/paymentserver")
+            .build();
+
+        connection.start().then(function () {
+            console.log("Connect signalr success");
+            connection.invoke("JoinRoom");
+        })
+
+        connection.on("ReceiveMoney", (message, amount) => {
+            showToast(`System received ${amount} vnd`);
+            showToast("Payment successfully!");
+            setTimeout(() => { window.location.href = "/Authen/UpdateAccountPremium" }, 3000);
+        })
+    </script>
+}

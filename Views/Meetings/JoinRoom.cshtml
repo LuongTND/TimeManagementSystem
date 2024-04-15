@@ -1,0 +1,342 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model string
+@{
+    Layout = null;
+    // ViewData["Title"] = "Room";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Room</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        .container-fluid {
+            height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto; /* Header, User List, Control Buttons */
+        }
+
+        .header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .meeting-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .meeting-title {
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
+
+        .user-list {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 1rem;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .user-card {
+            position: relative;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .user-video {
+            width: 100%;
+            height: 100%;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            overflow: hidden;
+        }
+
+            .user-video video {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
+        .user-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding: 0.25rem 0.5rem;
+            background-color: #d1d1d1;
+            box-shadow: 0 0 6px 4px #d1d1d1;
+        }
+
+        .special-user {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .user-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .control-buttons {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+            .control-buttons button {
+                margin: 0 10px;
+            }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="header">
+            <div class="meeting-info">
+                <i class="fas fa-video"></i> <span class="meeting-title">Meeting @Model</span>
+            </div>
+            <div>
+                <a class="btn btn-sm btn-outline-secondary" href="javascript:void(0)" onclick="openFullscreen()">Full Screen</a>
+                <a class="btn btn-sm btn-outline-danger" href="/">Leave Meeting</a>
+            </div>
+        </header>
+
+        <div class="user-list">
+        </div>
+        <div class="control-buttons">
+            <button class="btn btn-primary" onclick="ToggleAudio()">Mic</button>
+            <button class="btn btn-success" onclick="ToggleVideo()">Video</button>
+            <button class="btn btn-info" onclick="ShareScreen()">Share Screen</button>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        const ROOM_ID = "@(Model)";
+        const myPeer = new Peer();
+        const videoGrid = document.querySelector(".user-list");
+        var peerId;
+        var myStream;
+        var screenStream;
+
+        const shareScreenKeywords = ["web-contents", "screen", "window"];
+
+        const myVideo = document.createElement("video");
+        myVideo.muted = true;
+
+        const peers = {};
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/server")
+            .build();
+
+
+        myPeer.on("open", id => {
+            console.log(`Join room ${ROOM_ID} with id ${id}`);
+            peerId = id;
+
+            connection.start().then(function () {
+                console.log("Connect signalr success");
+                connection.invoke("JoinRoom", ROOM_ID, peerId);
+            });
+        });
+
+
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        }).then(stream => {
+            AddVideoStream("Mine", myVideo, stream, false);
+            myStream = stream;
+
+            myPeer.on("call", call => {
+                call.answer(stream);
+
+                const video = document.createElement("video");
+                call.on('stream', userStream => {
+                    if (GetVideoElementByStreamId(userStream.id)) return;
+
+                    AddVideoStream(null, video, userStream, peers[call.peer] != null && peers[call.peer].length == 1);
+
+                    SaveCall(call.peer, call);
+                });
+
+                call.on('close', () => {
+                    video.closest(".user-card").remove();
+                });
+            });
+
+            connection.on("UserConnnected", userid => {
+                connectToNewUser(userid, stream);
+            });
+        });
+
+        connection.on("UserDisconnected", userid => {
+            if (peers[userid]) {
+                for (var call of peers[userid]) {
+                    call.close();
+                }
+            }
+        });
+
+        function connectToNewUser(userId, stream) {
+            const call = myPeer.call(userId, stream);
+            if (screenStream) myPeer.call(userId, screenStream);
+            const video = document.createElement('video');
+            call.on('stream', userVideoStream => {
+                AddVideoStream(null, video, userVideoStream, false);
+            });
+
+            call.on('close', () => {
+                video.closest(".user-card").remove();
+            });
+
+            SaveCall(userId, call);
+        }
+
+        function ToggleVideo() {
+            const videoTrack = myStream.getVideoTracks().find(track => track.kind === 'video');
+            videoTrack.enabled = !videoTrack.enabled;
+        }
+
+        function ToggleAudio() {
+            const audioTrack = myStream.getAudioTracks().find(track => track.kind === 'audio');
+            audioTrack.enabled = !audioTrack.enabled;
+        }
+
+        async function ShareScreen() {
+            try {
+                await navigator.mediaDevices.getDisplayMedia({
+                    audio: true,
+                    video: { mediaSource: "screen" }
+                }).then(stream => {
+                    let screenVideo = document.createElement("video");
+                    screenStream = stream;
+
+                    AddVideoStream(null, screenVideo, stream, true);
+
+                    stream.getVideoTracks()[0].addEventListener('ended', () => {
+                        screenVideo.closest(".user-card").remove();
+                        screenStream = null;
+                        connection.invoke("StopShareScreen", peerId, stream.id);
+                    });
+
+                    for (var id in peers) {
+                        myPeer.call(id, stream);
+                    }
+                });
+            } catch (error) {
+                console.error("Error capturing screen:", error);
+            }
+        }
+
+        connection.on("StopShare", (peerid, streamid) => {
+            GetVideoElementByStreamId(streamid).closest(".user-card").remove();
+            if (peers[peerid]) {
+                peers[peerid].pop();
+            }
+        });
+
+        function GetVideoElementByStreamId(streamid) {
+            let videos = document.querySelectorAll(".user-list video");
+
+            for (let video of videos) {
+                if (video.srcObject.id == streamid) {
+                    return video;
+                }
+            }
+
+            return null;
+        }
+
+        function SaveCall(userId, call) {
+            if (!peers[userId]) peers[userId] = [];
+            peers[userId] = [...peers[userId], call];
+        }
+
+        function AddVideoStream(userName, video, stream, isShare) {
+            if (GetVideoElementByStreamId(stream.id)) return;
+
+            // Create user-card container
+            var userCard = document.createElement('div');
+            userCard.classList.add('user-card');
+
+            if (isShare) {
+                userCard.classList.add('special-user');
+            }
+
+            // Create user-video container
+            var userVideo = document.createElement('div');
+            userVideo.classList.add('user-video');
+
+            // Create video element
+            video.srcObject = stream;
+            video.play();
+            video.addEventListener('loadedmetadata', () => {
+                video.play();
+            });
+
+            // Append video element to user-video container
+            userVideo.appendChild(video);
+
+            // Create user-info container
+            var userInfo = document.createElement('div');
+            userInfo.classList.add('user-info');
+
+            if (userName) {
+                // Create user-name span
+                var userNameSpan = document.createElement('span');
+                userNameSpan.classList.add('user-name');
+                userNameSpan.textContent = userName;
+
+                // Append user-name span to user-info container and append to userCard
+                userInfo.appendChild(userNameSpan);
+                userCard.appendChild(userInfo);
+            }
+
+            userCard.appendChild(userVideo);
+
+            if (isShare) {
+                videoGrid.prepend(userCard);
+            } else {
+                videoGrid.appendChild(userCard);
+            }
+        }
+
+        async function openFullscreen() {
+            if (await navigator.permissions.query({ name: 'window-management' }).state !== 'granted') {
+                // Permission not granted. Call `window.getScreenDetails()` to prompt.
+                await window.getScreenDetails();
+            }
+
+            var elem = document.documentElement;
+
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
